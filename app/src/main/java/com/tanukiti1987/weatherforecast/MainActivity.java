@@ -18,11 +18,16 @@ public class MainActivity extends ActionBarActivity {
         }
 
         @Override
-        protected void onPostExecute(String data) {
+        protected void onPostExecute(WeatherForecast data) {
             super.onPostExecute(data);
 
             if (data != null) {
-                textView.setText(data);
+                textView.setText(data.location.area + " " + data.location.prefecture + " " + data.location.city);
+
+                for (WeatherForecast.Forecast forecast : data.forecastList) {
+                    textView.append("\n");
+                    textView.append(forecast.dateLabel + " " + forecast.telop);
+                }
             } else if (exception != null) {
                 Toast.makeText(MainActivity.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
             }
