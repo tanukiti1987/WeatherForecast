@@ -1,6 +1,6 @@
 package com.tanukiti1987.weatherforecast;
 
-import android.os.Handler;
+import android.content.Context;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -8,47 +8,36 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
-
-
 public class MainActivity extends ActionBarActivity {
 
     private TextView textView;
-    private Handler handler;
+
+    private class GetWeatherForecastTask extends GetWeatherForecastApiTask {
+        public GetWeatherForecastTask(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onPostExecute(String data) {
+            super.onPostExecute(data);
+
+            if (data != null) {
+                textView.setText(data);
+            } else if (exception != null) {
+                Toast.makeText(MainActivity.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        handler = new Handler();
         setContentView(R.layout.activity_main);
 
         textView = (TextView) findViewById(R.id.tv_main);
-
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    final String data = WeatherApi.getWeather(MainActivity.this, "400040");
-
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            textView.setText(data);
-                        }
-                    });
-                } catch (final IOException e) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }
-        };
-        thread.start();
+        new GetWeatherForecastTask(this).execute("400040");
     }
-    
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
