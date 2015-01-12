@@ -5,12 +5,16 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 
-    private TextView textView;
+    private TextView location;
+    private LinearLayout forecastLayout;
 
     private class GetWeatherForecastTask extends GetWeatherForecastApiTask {
         public GetWeatherForecastTask(Context context) {
@@ -22,11 +26,27 @@ public class MainActivity extends ActionBarActivity {
             super.onPostExecute(data);
 
             if (data != null) {
-                textView.setText(data.location.area + " " + data.location.prefecture + " " + data.location.city);
+                location.setText(data.location.area + " " + data.location.prefecture + " " + data.location.city);
 
                 for (WeatherForecast.Forecast forecast : data.forecastList) {
-                    textView.append("\n");
-                    textView.append(forecast.dateLabel + " " + forecast.telop);
+                    View row = View.inflate(MainActivity.this, R.layout.forecasts_row, null);
+
+                    TextView date = (TextView) row.findViewById(R.id.tv_date);
+                    date.setText(forecast.dateLabel);
+
+                    TextView telop = (TextView) row.findViewById(R.id.tv_telop);
+                    telop.setText(forecast.telop);
+
+                    TextView temp = (TextView) row.findViewById(R.id.tv_temperature);
+                    temp.setText(forecast.temperature.toString());
+
+                    ImageView imageView = (ImageView) row.findViewById(R.id.iv_weather);
+                    imageView.setTag(forecast.image.url);
+
+                    ImageLoaderTask task = new ImageLoaderTask(MainActivity.this);
+                    task.execute(imageView);
+
+                    forecastLayout.addView(row);
                 }
             } else if (exception != null) {
                 Toast.makeText(MainActivity.this, exception.getMessage(), Toast.LENGTH_SHORT).show();
@@ -39,7 +59,9 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        textView = (TextView) findViewById(R.id.tv_main);
+        location = (TextView) findViewById(R.id.tv_location);
+        forecastLayout = (LinearLayout) findViewById(R.id.ll_forecasts);
+
         new GetWeatherForecastTask(this).execute("400040");
     }
 
