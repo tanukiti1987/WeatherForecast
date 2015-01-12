@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,6 +16,7 @@ public class MainActivity extends ActionBarActivity {
 
     private TextView location;
     private LinearLayout forecastLayout;
+    private ProgressBar progress;
 
     private class GetWeatherForecastTask extends GetWeatherForecastApiTask {
         public GetWeatherForecastTask(Context context) {
@@ -22,8 +24,15 @@ public class MainActivity extends ActionBarActivity {
         }
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progress.setVisibility(View.VISIBLE);
+        }
+
+        @Override
         protected void onPostExecute(WeatherForecast data) {
             super.onPostExecute(data);
+            progress.setVisibility(View.GONE);
 
             if (data != null) {
                 location.setText(data.location.area + " " + data.location.prefecture + " " + data.location.city);
@@ -61,6 +70,7 @@ public class MainActivity extends ActionBarActivity {
 
         location = (TextView) findViewById(R.id.tv_location);
         forecastLayout = (LinearLayout) findViewById(R.id.ll_forecasts);
+        progress = (ProgressBar) findViewById(R.id.progress);
 
         new GetWeatherForecastTask(this).execute("400040");
     }
